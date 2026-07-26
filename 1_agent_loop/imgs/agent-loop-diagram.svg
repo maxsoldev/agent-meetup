@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 150" fill="none">
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #3f3f46; }
+    .box { stroke: #d4d4d8; stroke-width: 1; rx: 6; fill: #ffffff; }
+    .arrow { stroke: #a1a1aa; stroke-width: 1.25; fill: none; marker-end: url(#ah); }
+    .label { font-size: 9px; fill: #a1a1aa; }
+    .loop-bg { fill: #f0f5ff; stroke: #93b4f8; stroke-width: 1; rx: 10; stroke-dasharray: 4 2; }
+    .loop-label { font-size: 10px; fill: #5b7fc4; font-weight: 500; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto">
+      <path d="M0,0 L6,2 L0,4" fill="#a1a1aa"/>
+    </marker>
+  </defs>
+
+  
+  <rect class="loop-bg" x="126" y="14" width="292" height="130"/>
+  <text class="loop-label" x="272" y="28" text-anchor="middle">agentic loop</text>
+
+  
+  <rect class="box" x="4" y="38" width="100" height="30"/>
+  <text x="54" y="58" text-anchor="middle">Your prompt</text>
+
+  
+  <line class="arrow" x1="104" y1="53" x2="134" y2="53"/>
+
+  
+  <rect class="box" x="136" y="38" width="130" height="30"/>
+  <text x="201" y="58" text-anchor="middle">Claude evaluates</text>
+
+  
+  <line class="arrow" x1="266" y1="53" x2="316" y2="53"/>
+  <text class="label" x="291" y="46" text-anchor="middle">tool calls</text>
+
+  
+  <rect class="box" x="318" y="38" width="90" height="30"/>
+  <text x="363" y="58" text-anchor="middle">Tool call(s)</text>
+
+  
+  <path class="arrow" d="M 363 68 L 363 98 L 230 98 L 230 70"/>
+  <text class="label" x="296" y="94" text-anchor="middle">tool result</text>
+
+  
+  <path class="arrow" d="M 170 68 L 170 128 L 520 128"/>
+  <text class="label" x="300" y="141">no tool calls</text>
+
+  
+  <rect class="box" x="522" y="113" width="100" height="30"/>
+  <text x="572" y="133" text-anchor="middle">Final answer</text>
+</svg>
