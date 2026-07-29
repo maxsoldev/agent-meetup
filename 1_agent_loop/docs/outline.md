@@ -7,16 +7,31 @@ QR Code with reference meetup repo
 Today: Agentic Coding Harness basics
 Next meetups:
 
-1. Agent Memory
-2. Subagents and Loops
-3. Dark Factories and future of work
-4. Harness deep-dives - retries, sandboxes, llm tokenomics
+TODO: Discuss next topics
+
+1. Agent Loop + Basic Tools
+2. Other harness featueres: skills, MCP, hooks & middleware
+3. Subagents and Loops
+4. Agent Memory & Search
+5. Dark Factories and future of work
+6. Harness deep-dives - retries, sandboxes, llm tokenomics
+7. Agent tooling - observability, integrations
 
 # S: Agenda
 
 1. What is agentic harness?
 2. What's under the hood?
 3. Existing harnesses like pi
+
+# What is an Agent?
+
+Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
+
+Agent = Model (LLM) + Harness
+
+If it's not the model, it is harness
+
+Today we'll build a simple harness around a LLM and make our own agents
 
 # S: LLMs Basics
 
@@ -82,11 +97,15 @@ uv run python src/llm_tool_call.py "What is the weather in Munich right now?"
 The model returns a structured `get_weather` tool call. Our code sends requests
 to the free Open-Meteo API and returns the current temperature
 
+We've just extended the abilites of the model (LLM) with an API call. Harness added something model couldn't do out of the box and there are many other things we can add to extend the model capabilities. That's harness engineering
+
+![Harness Capabilities](../imgs/harness-capabilities.png)
+
+# Message history
+
 Tool result is not looking nice. What if we pass the tool result back to the model instead of just displaying it?
 
 // uncomment the messages array
-
-# Message history
 
 Now we've introduced message history by appending messages and tool results to a list of messages and passing it to the model. Now we're keeping state. Note that the model itself doesn't - it just sees a new full messages list and outputs result
 
@@ -147,11 +166,13 @@ All of those terminal commands are essentially functions similar to the weather 
 
 # Agent Loop
 
-WARNING! This agent seems simple and cute but it's incredibly powerful and dangerous - it can completely wipe out your computer, steal your credentials from .env and do all kinds of damage. It's for illustrative purposes only and shouldn't be used as agent for doing work
+Let's give our agent ability to execute bash commands.
 
 Our agent has one general-purpose tool: it can run Bash commands. The model
 chooses a command, our harness runs it, and the command output goes back to the
 model for its next decision.
+
+WARNING! This agent seems simple and cute but it's incredibly powerful and dangerous - it can completely wipe out your computer, steal your credentials from .env and do all kinds of damage. It's for illustrative purposes only and shouldn't be used as agent for doing work
 
 ```sh
 uv run simple_agent.py "Create and run a fibonacci python algorithm in $PWD for n = 10"
@@ -175,12 +196,26 @@ Model takes turns - each turn is
 1. Model thinks
 2. Model calls tools
 3. Tools return results to model
+4. Repeat from 1 until no more tool calls
+
+> ReAct Loop = Model reasons, takes an action via a tool call, observes the result, and repeats in a while loop until there are no more tool calls
 
 Agent Loop is turns running in a loop until model decided to not call any more tools (e.g. first it read a file - tool call, then it wrote to this file - tool call, then it executed the file - tool call, evaluated results of the tool call and finished the loop)
 
 More advanced models also provide reasoning capability which is basically producing output tokens for model internal monologue that help it solve the problem. They are not intended to be seen by the user and are billed as output tokens
 
 Interactive agent we've built is essentially a simplest version of Agentic Coding Harness. Congratulations, you now know what's under the hood of Claude Code, Codex, OpenClaw and all other agents out there.
+
+Reference:
+
+[2] [ReAct Loop Paper](https://arxiv.org/abs/2210.03629)
+[3] [Mini SWE Agent](https://github.com/SWE-agent/mini-swe-agent)
+
+# Filesystem
+
+We've sneaked in one additional capability that comes out of the box on the personal computers - the filesystem access. The agent can read and write files on your computer. However, in production you definitely want to limit what the agent has access to.
+
+This helps the agent to offload the information and share it between sessions. Remember that model itself only has access to the messages so far.
 
 # Sandboxing
 
@@ -195,7 +230,9 @@ Besides sandbox hardening production grade harnesses also provide
 - Nice TUI interface
 - Model retries
 - Security guardrails
-- Persistent memory, skills, subagents, loops (future meetups)
+- Persistent memory, skills, hooks, subagents, loops (future meetups)
+
+![Harness diagram](../imgs/harness-diagram.png)
 
 One such production-grade harness is pi built by our neighbour Mario Zechner from Austria. I'd like to share pi with you because of several reasons
 
@@ -212,7 +249,13 @@ The cool thing about coding agents is that you can ask them to install and setup
 
 # Conclusion
 
-I hope now you better understand how an agentic harness works under the hood.
+Agent = Model + Harness
+
+If it's not the model, it is harness
+
+Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
+
+Today you saw how to take a model and add simple harness around it to get an agent
 
 We've covered:
 
@@ -235,6 +278,10 @@ Are there any questions?
 Now it's time to put the agents to work on our agent competition platform!
 
 # References
+
+1. https://www.langchain.com/blog/the-anatomy-of-an-agent-harness
+2. https://arxiv.org/abs/2210.03629
+3. https://github.com/SWE-agent/mini-swe-agent - minimal agent used in SWE bench
 
 # Appendix
 
