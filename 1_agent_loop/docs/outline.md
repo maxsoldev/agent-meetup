@@ -1,49 +1,39 @@
-# S: Reference Repo
+# S: Prerequisites
 
 QR Code with reference meetup repo
 
+Prerequisites:
+
+1. Clone repo
+2. Install python (see uv instructions in README.md)
+3. No typing expected during the talk, use scripts in repo or watch me do it and then try it out at home at your own pace using agentic harness as a guide and tutor
+
 # S: Long-Term Agenda
 
-Today: Agentic Coding Harness basics
-Next meetups:
-
-TODO: Discuss next topics
-
-1. Agent Loop + Basic Tools
-2. Other harness featueres: skills, MCP, hooks & middleware
-3. Subagents and Loops
-4. Agent Memory & Search
-5. Dark Factories and future of work
-6. Harness deep-dives - retries, sandboxes, llm tokenomics
-7. Agent tooling - observability, integrations
+1. (today) Agent Foundations: Agent Loop + Basic Tools
+2. More harness featueres: skills, MCP, hooks
+3. Agent Memory & Search
+4. Subagents and Loops
+5. Harness internals - sandboxes, llm tokenomics
+6. Agent tooling - observability, integrations
+7. Dark Factories and future of work
 
 # S: Agenda
 
-1. What is agentic harness?
-2. What's under the hood?
-3. Existing harnesses like pi
-
-# What is an Agent?
-
-Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
-
-Agent = Model (LLM) + Harness
-
-If it's not the model, it is harness
-
-Today we'll build a simple harness around a LLM and make our own agents
+1. What is an Agent?
+2. What is a Harness?
+3. What's under the hood of a coding harnesses?
+4. Existing harnesses like pi
 
 # S: LLMs Basics
 
-LLMs are neural networks
-
-LLMs are trained on a internet-scale corpus of text to predict next token
-
-LLMs are stateless and can only produce text (not discussing multi-modal now)
-
-Text In -> LLM -> Text Out
-
-LLMs themselves don't manage state (messages, outputs), harness does
+- LLMs are neural networks
+- Neural networks are machine learning models trained on data to predict something
+- LLMs are trained on a internet-scale corpus of text to predict the next word (token)
+  > Example: "Hello my name \_" -> predict: "is"
+- That means that LLMs can only take in text and continue it (not discussing multi-modal now)
+  > Text In -> LLM -> Text Out
+- LLMs themselves don't manage state, they just continue whatever you gave them
 
 # S: Different LLM Providers
 
@@ -56,11 +46,13 @@ There are many LLM providers. Main tradeoff is between
 3. Speed - smaller models provide results faster
 4. Availability - the more infra provider has the better the availability (e.g. Kimi/Deepseek was hard to use because a lot of demand and few servers)
 
-Each provider has its own API (URL) for using the model
+Each model offers a different configuration in that space. So, different models will be better suited for different tasks.
 
-Routers provide a common interface to many providers. We'll use Openrouter as example here
+Each provider has its own API (URL) for using the model.
 
-Let's generate API key and put it into .env file, so we can do our first API call
+Routers offer a common interface to many providers allowing to easily switch between models based on your task at hand.
+
+We'll use Openrouter as example here. Let's generate API key and put it into .env file, so we can do our first API call
 
 # Simple LLM API call
 
@@ -223,7 +215,7 @@ Our agent can pretty much nuke our whole system because it has the same permissi
 
 Production-grade agentic harnesses solve this by adding sandbox envrionments around the agent. For example, limiting agent to only reading and writing within the current repository or disabling network access for the agent, so a malicious prompt injection can't cause agent to exfiltrate credentials or leak personal info.
 
-# Pi
+# Pi & OpenCode
 
 Besides sandbox hardening production grade harnesses also provide
 
@@ -247,9 +239,19 @@ However, pi is also quite powerful and dangerous because of its minimalism. It d
 
 The cool thing about coding agents is that you can ask them to install and setup the extension instead of doing it manually
 
+# S: What is an Agent?
+
+Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
+
+Agent = Model (LLM) + Harness
+
+If it's not the model, it is harness
+
+Today we'll build a simple harness around a LLM and make our own agents
+
 # Conclusion
 
-Agent = Model + Harness
+Agent = Model + Tools + Loop = Model + Harness
 
 If it's not the model, it is harness
 
@@ -293,3 +295,4 @@ Claude Images
 2. Add references to docs and blogs
 3. Dry run e2e
 4. Add claude images from imgs/ to the appendis
+5. How to deal with Windows (WSL)
