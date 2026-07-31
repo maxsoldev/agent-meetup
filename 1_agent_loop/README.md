@@ -3,7 +3,7 @@
 This workshop builds an agentic coding harness step by step: a simple LLM
 call, tool calling, message history, token counting, and a command-line agent.
 
-Follow the `docs/outline.md` for self-paced workshop. Pass `outline.md` to a coding agent like [pi](pi.dev) and ask to give you a guided workshop. Ask it everything you don't quite understand and ask to test you with questions.
+Follow the [outline.md](docs/outline.md) for self-paced workshop. Pass `outline.md` to a coding agent like [pi](pi.dev) and ask to give you a guided workshop. Ask it everything you don't quite understand and ask to test you with questions.
 
 When you're ready to test your knowledge you can try [braingym](braingym.dev) for a tailored revision session.
 

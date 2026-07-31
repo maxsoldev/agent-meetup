@@ -38,8 +38,6 @@ Prerequisites:
 
 # Different LLM Providers
 
-https://artificialanalysis.ai/ - index of LLM intelligence
-
 There are many LLM providers. Main tradeoff is between
 
 1. Intelligence - bigger models are usually smarter and perform better with fewer prompts
@@ -48,6 +46,8 @@ There are many LLM providers. Main tradeoff is between
 4. Availability - the more infra provider has the better the availability (e.g. Kimi/Deepseek was hard to use because a lot of demand and few servers)
 
 Each model offers a different configuration in that space. So, different models will be better suited for different tasks.
+
+https://artificialanalysis.ai/ - LLM comparison website
 
 Each provider has its own API (URL) for using the model.
 
@@ -69,7 +69,7 @@ cd 1_agent_loop/src
 uv run llm_call.py "What is an AI Agent?"
 ```
 
-That's really cool. However, there are several problems right away.
+That's cool. However, there are several problems right away.
 
 1. All model can tell us is based on the knowledge in the LLM training corpus.
 2. Model doesn't remember between invocations
@@ -98,9 +98,9 @@ LLMs output only text but they can output structured text
 uv run llm_call.py "Output only json with keys 'location': 'Munich', date: '31.07.26'"
 ```
 
-It produces json that we can parse and pass as the function input in our code
+It produces json that we can parse and pass as the function input in our code. This ability to produce structured response is built into many LLM APIs via `tool` parameter where we pass a list of tools available to the model similarly to how we pass a list of messages to `message` parameter.
 
-Now let the model decide when to call a weather tool:
+Now we let the model decide when to call a weather tool:
 
 ```bash
 uv run llm_tool_call.py "What is the weather in Munich right now?"
@@ -121,7 +121,7 @@ Now we've introduced message history by appending messages and tool results to a
 
 # Multi-Turn
 
-The issue with our setup right now is that we can't follow up after a reply. All messages are still one-shot: text in -> text out. If I ask the model in a new call what did we discuss before it won't remember because model itself is stateless and doesn't keep memory between invocations
+The issue with our setup right now is that model doesn't retain memory between calls. If I ask the model in a new call what did we discuss before it won't remember because model itself is stateless and doesn't keep memory between invocations
 
 ```sh
 uv run llm_tool_call.py "What did we discuss before?"
@@ -264,6 +264,10 @@ However, pi is also quite powerful and dangerous because of its minimalism. It d
 The cool thing about coding agents is that you can ask them to install and setup the extension instead of doing it manually
 
 If you're just starting out you might like to use a harness with more "batteries" included out of the box like [OpenCode](https://opencode.ai/)
+
+Almost anything that you can do by hand on computer can be automated by an agent. You just need to give the agent a right tool. Example - use [Marp](https://marp.app/) to generate slide decks like [one we use today](./agent-foundations-deck.pdf) from [markdown file](agent-fight-club-deck.md).
+
+Biggest use case is to generate code but there are countless other processes in your life that can be iterated on quicker with agents.
 
 # What is an Agent?
 
