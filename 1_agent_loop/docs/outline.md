@@ -1,4 +1,4 @@
-# S: Prerequisites
+# Prerequisites
 
 QR Code with reference meetup repo
 
@@ -8,24 +8,25 @@ Prerequisites:
 2. Install python (see uv instructions in README.md)
 3. No typing expected during the talk, use scripts in repo or watch me do it and then try it out at home at your own pace using agentic harness as a guide and tutor
 
-# S: Long-Term Agenda
+# Agenda
+
+1. What is an Agent?
+2. What is a Harness?
+3. What's under the hood of a coding harnesses?
+4. Existing harnesses like pi, OpenCode
+
+# Long-Term Agenda
 
 1. (today) Agent Foundations: Agent Loop + Basic Tools
 2. More harness featueres: skills, MCP, hooks
 3. Agent Memory & Search
 4. Subagents and Loops
-5. Harness internals - sandboxes, llm tokenomics
+5. Harness internals - compaction, sandboxes, llm tokenomics
 6. Agent tooling - observability, integrations
-7. Dark Factories and future of work
+7. Self-improving agents e.g. Hermes, OpenClaw
+8. Dark Factories and future of work
 
-# S: Agenda
-
-1. What is an Agent?
-2. What is a Harness?
-3. What's under the hood of a coding harnesses?
-4. Existing harnesses like pi
-
-# S: LLMs Basics
+# LLMs Basics
 
 - LLMs are neural networks
 - Neural networks are machine learning models trained on data to predict something
@@ -35,7 +36,7 @@ Prerequisites:
   > Text In -> LLM -> Text Out
 - LLMs themselves don't manage state, they just continue whatever you gave them
 
-# S: Different LLM Providers
+# Different LLM Providers
 
 https://artificialanalysis.ai/ - index of LLM intelligence
 
@@ -60,22 +61,41 @@ Let's now try running a simple LLM call via Openrouter API
 
 You'll need
 
-../src/llm_call.py
-
 ```bash
-uv run python src/llm_call.py "What is an agentic coding harness?"
+cd 1_agent_loop/src
 ```
 
-That's really cool. However, this is all based on the knowledge in the LLM training corpus. If we ask it what's the weather like in Munich it won't be able to answer because it was trained in the past and we're asking it about current weather.
+```bash
+uv run llm_call.py "What is an AI Agent?"
+```
 
-However, there are APIs available that can tell the current weather, so what if let LLM use this API
+That's really cool. However, there are several problems right away.
+
+1. All model can tell us is based on the knowledge in the LLM training corpus.
+2. Model doesn't remember between invocations
+
+Examples:
+
+If we ask it what's the weather like in Munich it won't be able to answer because it was trained in the past and we're asking it about current weather.
+
+```bash
+uv run llm_call.py "What is the weather like in Munich today?"
+```
+
+Model is stateless and doesn't persist memory between calls
+
+```bash
+uv run llm_tool_call.py "What did we discuss before?"
+```
 
 # Tool Calling
+
+Let's deal with LLM inability to tell us current weather. The insight is that there are APIs available that can fetch weather data, so can we make LLM call this API?
 
 LLMs output only text but they can output structured text
 
 ```sh
-uv run python src/llm_call.py "Output only json with keys 'location': 'Munich', date: '26.07.26'"
+uv run llm_call.py "Output only json with keys 'location': 'Munich', date: '31.07.26'"
 ```
 
 It produces json that we can parse and pass as the function input in our code
@@ -83,15 +103,13 @@ It produces json that we can parse and pass as the function input in our code
 Now let the model decide when to call a weather tool:
 
 ```bash
-uv run python src/llm_tool_call.py "What is the weather in Munich right now?"
+uv run llm_tool_call.py "What is the weather in Munich right now?"
 ```
 
-The model returns a structured `get_weather` tool call. Our code sends requests
-to the free Open-Meteo API and returns the current temperature
+The model returns a structured `get_weather` tool call. Our code sends one
+request to the free wttr.in API and returns the current weather.
 
 We've just extended the abilites of the model (LLM) with an API call. Harness added something model couldn't do out of the box and there are many other things we can add to extend the model capabilities. That's harness engineering
-
-![Harness Capabilities](../imgs/harness-capabilities.png)
 
 # Message history
 
@@ -106,13 +124,13 @@ Now we've introduced message history by appending messages and tool results to a
 The issue with our setup right now is that we can't follow up after a reply. All messages are still one-shot: text in -> text out. If I ask the model in a new call what did we discuss before it won't remember because model itself is stateless and doesn't keep memory between invocations
 
 ```sh
-uv run python src/llm_tool_call.py "What did we discuss before?"
+uv run llm_tool_call.py "What did we discuss before?"
 ```
 
 However, we can fix it by appending previous user messages and agent replies to the message list and passing this ever-growing list to the model. We'll use a never-ending while loop to do it, so our conversation can go on until the context window is full.
 
 ```bash
-uv run python src/llm_multiturn.py
+uv run llm_multiturn.py
 ```
 
 # Context window and Caching
@@ -124,6 +142,10 @@ Token costs are different for input tokens and output tokens with input tokens b
 https://openrouter.ai/openai/gpt-5.6-luna
 
 However, we don't pay full read price for all messages sent to the model with each invocation. Model providers cache input tokens on their side and cached tokens cost much less than new read tokens. However, for tokens to be cached the message history mush be exactly the same as before. If I change a single character in a first message the whole cache will get invalidated and we'll incur a full cost for the whole message history. We will discuss more about how to save on your tokens in a future discussion on LLM tokenomics.
+
+# System Prompt
+
+We've seen user and assistant messages but there is also a special `system` prompt which model is trained to strictly adhere to. For example, if system prompt says speak like a pirate the user message can't undo that.
 
 # From LLM to an Agent
 
@@ -142,7 +164,7 @@ With the right **permissions**, commands can read data, change data, run program
 cat src/llm_call.py
 
 # Create and read a local file
-echo "What is computation?" > question.txt
+echo "What is an AI Agent?" > question.txt
 cat question.txt
 
 # Ask a computer on the web for information
@@ -173,7 +195,7 @@ uv run simple_agent.py "Create and run a fibonacci python algorithm in $PWD for 
 For a multi-turn version that keeps the full conversation history:
 
 ```bash
-uv run python src/simple_agent_interactive.py
+uv run simple_agent_interactive.py
 ```
 
 The script asks for confirmation before each command. This matters because a
@@ -200,8 +222,8 @@ Interactive agent we've built is essentially a simplest version of Agentic Codin
 
 Reference:
 
-[2] [ReAct Loop Paper](https://arxiv.org/abs/2210.03629)
-[3] [Mini SWE Agent](https://github.com/SWE-agent/mini-swe-agent)
+[ReAct Loop Paper](https://arxiv.org/abs/2210.03629)
+[Mini SWE Agent](https://github.com/SWE-agent/mini-swe-agent)
 
 # Filesystem
 
@@ -224,9 +246,11 @@ Besides sandbox hardening production grade harnesses also provide
 - Security guardrails
 - Persistent memory, skills, hooks, subagents, loops (future meetups)
 
+![Harness Capabilities](../imgs/harness-capabilities.png)
+
 ![Harness diagram](../imgs/harness-diagram.png)
 
-One such production-grade harness is pi built by our neighbour Mario Zechner from Austria. I'd like to share pi with you because of several reasons
+One such production-grade harness is pi built by our neighbour Mario Zechner from Austria. I'd like to share [pi](pi.dev) with you because of several reasons
 
 - Open Source - you know what's going on inside and can tweak it
 - Model-agnostic - no vendor lock-in, can use local models too
@@ -239,23 +263,19 @@ However, pi is also quite powerful and dangerous because of its minimalism. It d
 
 The cool thing about coding agents is that you can ask them to install and setup the extension instead of doing it manually
 
-# S: What is an Agent?
+If you're just starting out you might like to use a harness with more "batteries" included out of the box like [OpenCode](https://opencode.ai/)
 
-Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
+# What is an Agent?
 
-Agent = Model (LLM) + Harness
+An AI agent is a software system that can perceive information, reason about it, and take actions to achieve a goal—often with limited human input.
+
+Agent = Model + Harness
 
 If it's not the model, it is harness
 
-Today we'll build a simple harness around a LLM and make our own agents
+Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
 
 # Conclusion
-
-Agent = Model + Tools + Loop = Model + Harness
-
-If it's not the model, it is harness
-
-Harness engineering is how we build systems around models to turn them into work engines. The model contains the intelligence and the harness makes that intelligence useful
 
 Today you saw how to take a model and add simple harness around it to get an agent
 
@@ -271,6 +291,12 @@ We've covered:
 - Command permissions, confirmation prompts, and sandboxing
 - Why production harnesses such as pi add interfaces, retries, memory, and guardrails
 
+The best way to understand all of those concepts is to come home and work through the `outline.md` at your pace reading through the scripts and seeing how you can adjust or improve them.
+
+Then spin up a coding agent like [pi](pi.dev), pass it `outline.md` and ask to make a guided tour and ask you questions along the way to test your understanding.
+
+When you're ready to test your knowledge you can try [braingym](braingym.dev) for a tailored revision session.
+
 # Q&A
 
 Are there any questions?
@@ -279,20 +305,14 @@ Are there any questions?
 
 Now it's time to put the agents to work on our agent competition platform!
 
+https://agentfightclub.today/
+
 # References
 
-1. https://www.langchain.com/blog/the-anatomy-of-an-agent-harness
-2. https://arxiv.org/abs/2210.03629
-3. https://github.com/SWE-agent/mini-swe-agent - minimal agent used in SWE bench
-
-# Appendix
-
-Claude Images
-
-# TODO:
-
-1. Create slides
-2. Add references to docs and blogs
-3. Dry run e2e
-4. Add claude images from imgs/ to the appendis
-5. How to deal with Windows (WSL)
+- https://www.langchain.com/blog/the-anatomy-of-an-agent-harness - good overview article on agents and harnesses
+- https://arxiv.org/abs/2210.03629 - ReAct paper
+- https://github.com/SWE-agent/mini-swe-agent - minimal agent used in terminal bench
+- https://pi.dev/ - Pi agentic harness
+- https://github.com/anomalyco/opencode - OpenCode agentic harness
+- https://openrouter.ai/ - well-known model router for easy switching between providers
+- https://artificialanalysis.ai/ - LLM models comparison

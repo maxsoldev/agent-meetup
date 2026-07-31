@@ -10,6 +10,10 @@ import typer
 
 load_dotenv()
 
+if not os.environ.get("OPENROUTER_API_KEY"):
+    typer.echo("Set OPENROUTER_API_KEY in .env before running this command.", err=True)
+    raise typer.Exit(code=1)
+
 MODEL = "openai/gpt-5.6-luna"
 
 WEATHER_TOOL = {
@@ -31,42 +35,27 @@ WEATHER_TOOL = {
 }
 
 
-def get_json(url: str, parameters: dict) -> dict:
-    query = urllib.parse.urlencode(parameters)
-    with urllib.request.urlopen(f"{url}?{query}") as response:
-        return json.load(response)
-
-
 def get_weather(city: str) -> dict:
-    places = get_json(
-        "https://geocoding-api.open-meteo.com/v1/search",
-        {"name": city, "count": 1, "language": "en", "format": "json"},
-    )
-    if not places.get("results"):
-        raise ValueError(f"Could not find {city!r}.")
+    url = f"https://wttr.in/{urllib.parse.quote(city, safe='')}?format=j1"
+    with urllib.request.urlopen(url) as response:
+        weather = json.load(response)
 
-    place = places["results"][0]
-    forecast = get_json(
-        "https://api.open-meteo.com/v1/forecast",
-        {
-            "latitude": place["latitude"],
-            "longitude": place["longitude"],
-            "current": "temperature_2m,apparent_temperature,precipitation,wind_speed_10m",
-        },
-    )
-    current = forecast["current"]
+    current = weather["current_condition"][0]
     return {
-        "city": place["name"],
-        "country": place.get("country"),
-        "temperature_c": current["temperature_2m"],
-        "feels_like_c": current["apparent_temperature"],
-        "precipitation_mm": current["precipitation"],
-        "wind_speed_kmh": current["wind_speed_10m"],
+        "city": city,
+        "temperature_c": current["temp_C"],
+        "feels_like_c": current["FeelsLikeC"],
+        "description": current["weatherDesc"][0]["value"],
+        "wind_speed_kmh": current["windspeedKmph"],
     }
 
 
 def llm_call(messages: list[dict]) -> dict:
     body = {"model": MODEL, "messages": messages, "tools": [WEATHER_TOOL]}
+
+    typer.echo("\n#### LLM Sees: ####")
+    typer.echo(json.dumps(messages, indent=2))
+
     request = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions",
         data=json.dumps(body).encode(),
@@ -77,15 +66,15 @@ def llm_call(messages: list[dict]) -> dict:
         method="POST",
     )
     with urllib.request.urlopen(request) as response:
-        reply = json.load(response)
-    return reply["choices"][0]["message"]
+        reply = json.load(response)["choices"][0]["message"]
+
+    typer.echo("\n#### LLM Does: ####")
+    typer.echo(json.dumps(reply, indent=2))
+    return reply
 
 
 def main(message: str) -> None:
     """Answer a question, using the weather API when the model asks for it."""
-    if not os.environ.get("OPENROUTER_API_KEY"):
-        typer.echo("Set OPENROUTER_API_KEY in .env before running this command.", err=True)
-        raise typer.Exit(code=1)
 
     messages = [
         {"role": "user", "content": message},
@@ -100,10 +89,10 @@ def main(message: str) -> None:
 
     # 2. Our code runs the tool requested by the model.
     tool_call = tool_calls[0]
-    if tool_call["function"]["name"] != "get_weather":
-        raise ValueError("The model requested an unknown tool.")
+    # parse the tool call
     arguments = json.loads(tool_call["function"]["arguments"])
     typer.echo(f"Tool call: get_weather({arguments['city']!r})", err=True)
+    # call the weather function with tool call arguments
     weather = get_weather(arguments["city"])
     typer.echo(f"Tool result: {json.dumps(weather)}", err=True)
 
@@ -116,7 +105,7 @@ def main(message: str) -> None:
     #         "content": json.dumps(weather),
     #     }
     # )
-    # typer.echo(chat(messages)["content"])
+    # typer.echo(llm_call(messages)["content"])
 
 
 if __name__ == "__main__":

@@ -8,15 +8,14 @@ import typer
 
 load_dotenv()
 
+API_KEY = os.environ.get("OPENROUTER_API_KEY")
+assert API_KEY, "Set OPENROUTER_API_KEY in .env file before running this command."
+
 MODEL = "openai/gpt-5.6-luna"
 
 
 def main(message: str) -> None:
     """Send one message to an LLM and print its reply."""
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not api_key:
-        typer.echo("Set OPENROUTER_API_KEY before running this command.", err=True)
-        raise typer.Exit(code=1)
 
     body = {
         "model": MODEL,
@@ -26,7 +25,7 @@ def main(message: str) -> None:
         "https://openrouter.ai/api/v1/chat/completions",
         data=json.dumps(body).encode(),
         headers={
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json",
         },
         method="POST",
