@@ -23,8 +23,9 @@ Prerequisites:
 4. Subagents and Loops
 5. Harness internals - compaction, sandboxes, llm tokenomics
 6. Agent tooling - observability, integrations
-7. Self-improving agents e.g. Hermes, OpenClaw
-8. Dark Factories and future of work
+7. Benchmarks deep-dive - how terminal bench works
+8. Self-improving agents e.g. Hermes, OpenClaw
+9. Dark Factories and future of work
 
 # LLMs Basics
 
