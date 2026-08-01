@@ -34,7 +34,7 @@ Prerequisites:
   > Example: "Hello my name \_" -> predict: "is"
 - That means that LLMs can only take in text and continue it (not discussing multi-modal now)
   > Text In -> LLM -> Text Out
-- LLMs themselves don't manage state, they just continue whatever you gave them
+- LLMs are stateless, they just continue whatever input you gave them
 
 # Different LLM Providers
 
@@ -47,13 +47,13 @@ There are many LLM providers. Main tradeoff is between
 
 Each model offers a different configuration in that space. So, different models will be better suited for different tasks.
 
-https://artificialanalysis.ai/ - LLM comparison website
+https://artificialanalysis.ai/ - LLM comparison platform
 
 Each provider has its own API (URL) for using the model.
 
 Routers offer a common interface to many providers allowing to easily switch between models based on your task at hand.
 
-We'll use Openrouter as example here. Let's generate API key and put it into .env file, so we can do our first API call
+We'll use [Openrouter](https://openrouter.ai/) as example here. Let's generate API key and put it into .env file, so we can do our first API call
 
 # Simple LLM API call
 
