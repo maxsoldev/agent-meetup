@@ -55,6 +55,7 @@ def llm_call(messages: list[dict]) -> dict:
 
     typer.echo("\n#### LLM Sees: ####")
     typer.echo(json.dumps(messages, indent=2))
+    typer.echo(json.dumps(WEATHER_TOOL, indent=2))
 
     request = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions",

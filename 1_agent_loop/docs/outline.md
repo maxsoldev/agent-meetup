@@ -90,7 +90,7 @@ uv run llm_tool_call.py "What did we discuss before?"
 
 # Tool Calling
 
-Let's deal with LLM inability to tell us current weather. The insight is that there are APIs available that can fetch weather data, so can we make LLM call this API?
+Let's first deal with LLM inability to tell us current weather. The insight is that there are APIs available that can fetch weather data, so can we make LLM call this API?
 
 LLMs output only text but they can output structured text
 
@@ -117,7 +117,9 @@ Tool result is not looking nice. What if we pass the tool result back to the mod
 
 // uncomment the messages array
 
-Now we've introduced message history by appending messages and tool results to a list of messages and passing it to the model. Now we're keeping state. Note that the model itself doesn't - it just sees a new full messages list and outputs result
+Now we've introduced message history by appending messages and tool results to a list of messages and passing it to the model. Now the harness around the model is keeping state. Note that the model itself doesn't - it just sees a new full messages list and outputs result.
+
+This new request with updated message history can go to another GPU cluster than previous request and the model there will be able to handle it. Model statelesness allows model providers to scale horizontally.
 
 # Multi-Turn
 
@@ -127,7 +129,7 @@ The issue with our setup right now is that model doesn't retain memory between c
 uv run llm_tool_call.py "What did we discuss before?"
 ```
 
-However, we can fix it by appending previous user messages and agent replies to the message list and passing this ever-growing list to the model. We'll use a never-ending while loop to do it, so our conversation can go on until the context window is full.
+However, we can fix it by appending previous user messages and agent replies to the message list and passing this ever-growing list to the model. We'll use a never-ending while loop to do it, so our conversation can go on turn after turn.
 
 ```bash
 uv run llm_multiturn.py
@@ -135,7 +137,7 @@ uv run llm_multiturn.py
 
 # Context window and Caching
 
-Talking about context window - even with a while loop our conversation can't go on ad infinitum. Eventually LLM will "run out of memory". LLMs have "Context Windows" of different sizes which dictate how many tokens can fit in. For english it's usually considered 4 characters per token. Most models have either around 200k or 1mn tokens context window nowadays
+Even with a while loop our conversation can't go on ad infinitum. Eventually LLM will "run out of memory". LLMs have "Context Windows" of different sizes which dictate how many tokens can fit in. For english it's usually considered 4 characters per token. Most models have either around 200k or 1mn tokens context window nowadays
 
 Token costs are different for input tokens and output tokens with input tokens being much cheaper than output tokens
 
@@ -182,9 +184,7 @@ All of those terminal commands are essentially functions similar to the weather 
 
 Let's give our agent ability to execute bash commands.
 
-Our agent has one general-purpose tool: it can run Bash commands. The model
-chooses a command, our harness runs it, and the command output goes back to the
-model for its next decision.
+Our agent has one general-purpose tool: it can run Bash commands. The model chooses a command, our harness runs it, and the command output goes back to the model for its next decision.
 
 WARNING! This agent seems simple and cute but it's incredibly powerful and dangerous - it can completely wipe out your computer, steal your credentials from .env and do all kinds of damage. It's for illustrative purposes only and shouldn't be used as agent for doing work
 
@@ -198,8 +198,7 @@ For a multi-turn version that keeps the full conversation history:
 uv run simple_agent_interactive.py
 ```
 
-The script asks for confirmation before each command. This matters because a
-command tool has the same permissions as the person running the script.
+The script asks for confirmation before each command. This matters because a command tool has the same permissions as the person running the script.
 
 This is the famous Agent Loop from the ReAct paper that is the backbone of all of the agents you've heard about - Claude Code, Codex, OpenClaw, Hermes, you name it. Basically all it's all in 120 lines of code. Everything else is infrastructure to make sure this loop is robust, safe and convenient to use.
 

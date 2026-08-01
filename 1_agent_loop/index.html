@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Loop · Agent Guild #1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design tokens ────────────────────────────────────────────────── */
+    :root {
+      --bg:           hsl(43, 100%, 50%);   /* amber */
+      --bg-hot:       hsl(43, 88%, 42%);
+      --bg-deep:      hsl(43, 95%, 45%);
+      --ink:          hsl(0, 0%, 4%);
+      --ink-soft:     hsla(0, 0%, 4%, 0.65);
+      --ink-faint:    hsla(0, 0%, 4%, 0.35);
+      --paper:        hsl(43, 100%, 94%);
+      --panel:        hsla(0, 0%, 4%, 0.06);
+      --panel-strong: hsla(0, 0%, 4%, 0.11);
+      --hot:          hsl(0, 78%, 48%);
+      --green:        hsl(140, 65%, 32%);
+      --night:        hsl(0, 0%, 6%);
+      --night-fg:     hsl(43, 100%, 50%);
+      --night-dim:    hsla(43, 100%, 50%, 0.55);
+      --night-green:  hsl(140, 55%, 55%);
+      --night-blue:   hsl(210, 80%, 65%);
+      --night-red:    hsl(0, 70%, 60%);
+      --mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+    }
+
+    /* ── Reset / base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--ink); }
+    a:hover { text-decoration: none; }
+
+    /* ── Layout ───────────────────────────────────────────────────────── */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    section { padding: 80px 0; }
+    section + section { border-top: 2px solid var(--ink); }
+
+    /* ── NAV ──────────────────────────────────────────────────────────── */
+    nav {
+      border-bottom: 2px solid var(--ink);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+    nav .inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    nav .brand {
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 0;
+    }
+    nav ul li a {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      display: block;
+    }
+    nav ul li a:hover {
+      border-color: var(--ink);
+      background: var(--panel);
+    }
+
+    /* ── HERO ─────────────────────────────────────────────────────────── */
+    #hero {
+      padding: 96px 0 80px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0, transparent 23px,
+          rgba(0,0,0,0.035) 23px, rgba(0,0,0,0.035) 24px
+        ),
+        var(--bg);
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .hero-chip {
+      font-size: 11px;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      border: 2px solid var(--ink);
+      padding: 8px 14px;
+      display: inline-block;
+      margin-bottom: 32px;
+    }
+
+    .hero-title {
+      font-weight: 700;
+      font-size: clamp(72px, 12vw, 136px);
+      line-height: 0.92;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .hero-tagline {
+      font-size: 18px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border-top: 2px solid var(--ink);
+      padding-top: 18px;
+      max-width: 680px;
+      color: var(--ink-soft);
+    }
+    .hero-tagline strong { color: var(--ink); }
+
+    .hero-meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    .hero-meta .badge {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      border: 2px solid var(--ink);
+      padding: 8px 16px;
+      background: var(--ink);
+      color: var(--bg);
+    }
+    .hero-meta .badge.outline {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    /* ── SECTION HEADINGS ─────────────────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 6px;
+      display: inline-block;
+      margin-bottom: 36px;
+    }
+
+    h2.section-title {
+      font-weight: 700;
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    /* ── AGENDA ───────────────────────────────────────────────────────── */
+    .agenda-list {
+      list-style: none;
+      counter-reset: ag;
+    }
+    .agenda-list li {
+      counter-increment: ag;
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 20px;
+      padding: 22px 0;
+      border-bottom: 1px dashed var(--ink);
+      align-items: start;
+    }
+    .agenda-list li:last-child { border-bottom: none; }
+    .agenda-list li .num {
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 3px 7px;
+      display: inline-block;
+      align-self: start;
+      margin-top: 3px;
+    }
+    .agenda-list li .content .title {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+    .agenda-list li .content .desc {
+      font-size: 14px;
+      color: var(--ink-soft);
+    }
+
+    /* ── ROADMAP ──────────────────────────────────────────────────────── */
+    .roadmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .roadmap-card {
+      border: 2px solid var(--ink);
+      padding: 22px 20px;
+      background: var(--bg);
+      box-shadow: 5px 5px 0 var(--ink);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .roadmap-card.active {
+      background: var(--ink);
+      color: var(--bg);
+      box-shadow: 5px 5px 0 var(--bg-hot);
+    }
+    .roadmap-card .rn {
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    .roadmap-card.active .rn { opacity: 0.8; }
+    .roadmap-card .rt {
+      font-weight: 700;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    /* ── CONCEPTS ─────────────────────────────────────────────────────── */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .concept-card {
+      border: 2px solid var(--ink);
+      padding: 28px 24px;
+      background: var(--bg);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .concept-card .icon {
+      font-size: 40px;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    .concept-card .ctitle {
+      font-weight: 700;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+    .concept-card .cbody {
+      font-size: 14px;
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+    .concept-card .cbody code {
+      font-family: var(--mono);
+      background: var(--panel-strong);
+      border: 1px solid var(--ink);
+      padding: 1px 5px;
+      font-size: 0.88em;
+    }
+
+    /* ── TERMINAL WINDOW ──────────────────────────────────────────────── */
+    .terminal {
+      background: var(--night);
+      border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--ink);
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.55;
+      overflow: hidden;
+    }
+    .terminal-bar {
+      background: hsl(0, 0%, 14%);
+      border-bottom: 2px solid var(--ink);
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .terminal-bar .dots { display: flex; gap: 6px; }
+    .terminal-bar .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: hsla(43, 60%, 50%, 0.35);
+    }
+    .terminal-bar .dot.r { background: hsl(0, 65%, 50%); }
+    .terminal-bar .dot.y { background: hsl(43, 90%, 52%); }
+    .terminal-bar .dot.g { background: hsl(140, 55%, 48%); }
+    .terminal-bar .fname {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: hsla(43,60%,50%,0.6);
+      margin-left: 8px;
+      text-transform: uppercase;
+    }
+    .terminal-body { padding: 20px 22px; color: var(--night-fg); overflow-x: auto; }
+    .terminal-body pre { margin: 0; white-space: pre; }
+
+    /* syntax colours */
+    .tk  { color: var(--night-blue); }   /* keyword  */
+    .ts  { color: var(--night-green); }  /* string   */
+    .tc  { color: var(--night-dim); }    /* comment  */
+    .tf  { color: hsl(260, 70%, 72%); } /* function */
+    .tn  { color: hsl(30, 90%, 68%); }  /* number   */
+    .tp  { color: var(--night-fg); }     /* punct    */
+
+    /* shell prompt */
+    .sh-prompt { color: var(--night-dim); }
+    .sh-cmd    { color: var(--night-fg); }
+    .sh-out    { color: var(--night-green); font-style: italic; }
+
+    /* ── AGENT LOOP DIAGRAM ───────────────────────────────────────────── */
+    #loop { background: var(--bg-deep); }
+
+    .loop-diagram {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 0;
+      margin: 40px auto;
+      max-width: 780px;
+      position: relative;
+    }
+
+    .loop-box {
+      border: 2px solid var(--ink);
+      background: var(--bg);
+      box-shadow: 5px 5px 0 var(--ink);
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .loop-box.model {
+      grid-column: 1 / -1;
+      background: var(--ink);
+      color: var(--bg);
+      box-shadow: 5px 5px 0 var(--bg-hot);
+    }
+    .loop-box .lb-label {
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      opacity: 0.65;
+      margin-bottom: 4px;
+    }
+    .loop-box.model .lb-label { opacity: 0.7; }
+    .loop-box .lb-title {
+      font-weight: 700;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+    }
+    .loop-box .lb-sub {
+      font-size: 12px;
+      margin-top: 6px;
+      opacity: 0.65;
+    }
+
+    .loop-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+    .loop-step {
+      border: 2px solid var(--ink);
+      background: var(--bg);
+      box-shadow: 4px 4px 0 var(--ink);
+      padding: 20px 18px;
+      position: relative;
+    }
+    .loop-step .ls-num {
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 2px 7px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    .loop-step .ls-title {
+      font-weight: 700;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+    .loop-step .ls-body {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    /* animated loop indicator */
+    .loop-step.active-step {
+      background: var(--ink);
+      color: var(--bg);
+    }
+    .loop-step.active-step .ls-num { background: var(--bg); color: var(--ink); }
+    .loop-step.active-step .ls-body { color: hsla(43,100%,50%,0.75); }
+
+    /* ── SETUP ────────────────────────────────────────────────────────── */
+    .setup-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .setup-step {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .setup-step .sn {
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 3px 7px;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .setup-step .sc .stitle {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .setup-step .sc .sdesc {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+    }
+
+    /* ── SCRIPTS ──────────────────────────────────────────────────────── */
+    .scripts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .script-card {
+      border: 2px solid var(--ink);
+      background: var(--bg);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .script-card .sc-head {
+      background: var(--ink);
+      color: var(--bg);
+      padding: 10px 16px;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .script-card .sc-head .sc-badge {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      border: 1px solid var(--bg);
+      padding: 2px 6px;
+      opacity: 0.7;
+    }
+    .script-card .sc-body { padding: 16px 18px; }
+    .script-card .sc-cmd {
+      background: var(--night);
+      color: var(--night-fg);
+      padding: 10px 14px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      border: 1px solid var(--ink);
+    }
+    .script-card .sc-desc {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    /* ── RESOURCES ────────────────────────────────────────────────────── */
+    .resources-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+      list-style: none;
+    }
+    .resource-item a {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-decoration: none;
+      border: 2px solid var(--ink);
+      padding: 18px 20px;
+      background: var(--bg);
+      box-shadow: 4px 4px 0 var(--ink);
+      transition: box-shadow 0.1s, transform 0.1s;
+    }
+    .resource-item a:hover {
+      box-shadow: 6px 6px 0 var(--ink);
+      transform: translate(-1px, -1px);
+    }
+    .resource-item .ri-label {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 2px;
+    }
+    .resource-item .ri-title {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .resource-item .ri-url {
+      font-size: 11px;
+      color: var(--ink-soft);
+      word-break: break-all;
+    }
+
+    /* ── FOOTER ───────────────────────────────────────────────────────── */
+    footer {
+      border-top: 2px solid var(--ink);
+      padding: 28px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1080px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer .f-brand {
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    footer .f-links {
+      display: flex;
+      gap: 20px;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* ── INLINE CODE ──────────────────────────────────────────────────── */
+    code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--panel-strong);
+      border: 1px solid hsla(0,0%,4%,0.2);
+      padding: 1px 5px;
+    }
+
+    /* ── BLOCKQUOTE ───────────────────────────────────────────────────── */
+    .callout {
+      border-left: 5px solid var(--ink);
+      background: var(--panel);
+      padding: 14px 20px;
+      margin: 20px 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .callout strong { background: var(--ink); color: var(--bg); padding: 1px 5px; }
+
+    /* ── LOOP ANIMATION ──────────────────────────────────────────────── */
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 4px 4px 0 var(--ink); }
+      50%       { box-shadow: 4px 4px 0 var(--hot), 0 0 0 2px var(--hot); }
+    }
+    .loop-step.animating { animation: pulse-border 1.2s ease-in-out; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .container { padding: 0 18px; }
+      nav .inner { padding: 12px 18px; }
+      nav ul { display: none; }
+      section { padding: 52px 0; }
+      .loop-steps { grid-template-columns: 1fr 1fr; }
+      .hero-title { font-size: 64px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a class="brand" href="#hero">Agent Guild</a>
+    <ul>
+      <li><a href="#agenda">Agenda</a></li>
+      <li><a href="#concepts">Concepts</a></li>
+      <li><a href="#loop">Loop</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#scripts">Scripts</a></li>
+      <li><a href="#resources">Resources</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-chip">Agent Guild · Meetup #1 · Agent Foundations</div>
+    <h1 class="hero-title">Agent<br/>Loop</h1>
+    <p class="hero-tagline">
+      Build an agentic coding harness from scratch:<br/>
+      <strong>LLM call → tool calling → message history → agent loop.</strong>
+    </p>
+    <div class="hero-meta">
+      <span class="badge">Agent Foundations</span>
+      <span class="badge outline">120 lines of Python</span>
+      <span class="badge outline">OpenRouter API</span>
+    </div>
+  </div>
+</section>
+
+<!-- AGENDA -->
+<section id="agenda">
+  <div class="container">
+    <div class="section-label">Tonight's Agenda</div>
+    <h2 class="section-title">What we cover</h2>
+    <ol class="agenda-list">
+      <li>
+        <div class="num">01</div>
+        <div class="content">
+          <div class="title">What is an Agent?</div>
+          <div class="desc">LLMs as stateless text-in / text-out systems. Agent = Model + Harness.</div>
+        </div>
+      </li>
+      <li>
+        <div class="num">02</div>
+        <div class="content">
+          <div class="title">What is a Harness?</div>
+          <div class="desc">The software wrapping around a model that turns raw intelligence into useful work.</div>
+        </div>
+      </li>
+      <li>
+        <div class="num">03</div>
+        <div class="content">
+          <div class="title">What's under the hood?</div>
+          <div class="desc">A simple LLM call, structured output, tool calling, message history, tokens &amp; context windows.</div>
+        </div>
+      </li>
+      <li>
+        <div class="num">04</div>
+        <div class="content">
+          <div class="title">The Agent Loop</div>
+          <div class="desc">ReAct: model thinks → calls tool → observes result → repeats. The backbone of Claude Code, Codex, and every coding agent you've heard of.</div>
+        </div>
+      </li>
+      <li>
+        <div class="num">05</div>
+        <div class="content">
+          <div class="title">Existing Harnesses</div>
+          <div class="desc">Production-grade harnesses like <a href="https://pi.dev">pi</a> and <a href="https://opencode.ai">OpenCode</a> — what they add beyond the loop.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="section-label">Long-term Plan</div>
+    <h2 class="section-title">8-session roadmap</h2>
+    <div class="roadmap-grid">
+      <div class="roadmap-card active">
+        <div class="rn">// 01 · today</div>
+        <div class="rt">Agent Foundations<br/>Agent Loop + Basic Tools</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 02</div>
+        <div class="rt">Skills, MCP &amp; Hooks</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 03</div>
+        <div class="rt">Agent Memory &amp; Search</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 04</div>
+        <div class="rt">Subagents &amp; Loops</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 05</div>
+        <div class="rt">Compaction, Sandboxes &amp; LLM Tokenomics</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 06</div>
+        <div class="rt">Observability &amp; Integrations</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 07</div>
+        <div class="rt">Self-improving Agents</div>
+      </div>
+      <div class="roadmap-card">
+        <div class="rn">// 08</div>
+        <div class="rt">Dark Factories &amp; Future of Work</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY CONCEPTS -->
+<section id="concepts">
+  <div class="container">
+    <div class="section-label">Key Concepts</div>
+    <h2 class="section-title">Building blocks</h2>
+    <div class="concepts-grid">
+
+      <div class="concept-card">
+        <div class="icon">⚡</div>
+        <div class="ctitle">LLM API Call</div>
+        <div class="cbody">
+          A model is stateless. Send a <code>messages</code> array, get back a completion.
+          Text in, text out — every time from scratch.
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="icon">🔧</div>
+        <div class="ctitle">Tool Calling</div>
+        <div class="cbody">
+          Pass a <code>tools</code> list with JSON schemas. The model returns a structured
+          <code>tool_call</code> instead of prose. Your code runs the function and
+          returns the result.
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="icon">💬</div>
+        <div class="ctitle">Message History</div>
+        <div class="cbody">
+          State lives in your harness, not the model. Append every turn to a
+          <code>messages</code> list and re-send the whole list on each call.
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="icon">🪟</div>
+        <div class="ctitle">Context Window</div>
+        <div class="cbody">
+          LLMs have a finite context (~200k–1M tokens). Input tokens are cheaper than
+          output tokens. Providers cache unchanged prefixes — keep early messages stable.
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="icon">🖥️</div>
+        <div class="ctitle">Bash as a Tool</div>
+        <div class="cbody">
+          Almost all knowledge work is text. The terminal is a text interface to your computer.
+          Give the model a <code>run_bash</code> tool and it can read, write, run, and fetch
+          anything — with your permissions.
+        </div>
+      </div>
+
+      <div class="concept-card">
+        <div class="icon">🔁</div>
+        <div class="ctitle">The Agent Loop</div>
+        <div class="cbody">
+          A <code>while</code> loop: call LLM → if tool calls, execute them and append results
+          → repeat until no tool calls remain. That's it. That's Claude Code.
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 40px;">
+      <div class="section-label" style="margin-bottom:20px">Core idea</div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <span class="fname">llm_call.py — one request</span>
+        </div>
+        <div class="terminal-body">
+<pre><span class="tk">import</span> json, os, urllib.request
+<span class="tk">from</span> dotenv <span class="tk">import</span> load_dotenv
+
+<span class="tf">load_dotenv</span><span class="tp">()</span>
+
+MODEL <span class="tp">=</span> <span class="ts">"openai/gpt-5.6-luna"</span>
+
+body <span class="tp">=</span> <span class="tp">{</span>
+    <span class="ts">"model"</span><span class="tp">:</span> MODEL<span class="tp">,</span>
+    <span class="ts">"messages"</span><span class="tp">:</span> <span class="tp">[{</span><span class="ts">"role"</span><span class="tp">:</span> <span class="ts">"user"</span><span class="tp">,</span> <span class="ts">"content"</span><span class="tp">:</span> message<span class="tp">}],</span>
+<span class="tp">}</span>
+<span class="tc"># POST to OpenRouter → parse JSON → print reply</span>
+<span class="tk">with</span> urllib.request.<span class="tf">urlopen</span><span class="tp">(</span>request<span class="tp">)</span> <span class="tk">as</span> resp<span class="tp">:</span>
+    reply <span class="tp">=</span> json.<span class="tf">load</span><span class="tp">(</span>resp<span class="tp">)</span>
+typer.<span class="tf">echo</span><span class="tp">(</span>reply<span class="tp">[</span><span class="ts">"choices"</span><span class="tp">][</span><span class="tn">0</span><span class="tp">][</span><span class="ts">"message"</span><span class="tp">][</span><span class="ts">"content"</span><span class="tp">])</span></pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- AGENT LOOP -->
+<section id="loop">
+  <div class="container">
+    <div class="section-label">The Heart of Every Agent</div>
+    <h2 class="section-title">The ReAct loop</h2>
+
+    <div class="callout">
+      <strong>ReAct</strong> = <em>Reason → Act → Observe → Repeat.</em>
+      The model reasons, picks a tool, your harness runs it, the result goes back.
+      That's the backbone of Claude Code, Codex, OpenClaw — all of them.
+    </div>
+
+    <div class="loop-steps" id="loopSteps">
+      <div class="loop-step" data-step="0">
+        <div class="ls-num">01</div>
+        <div class="ls-title">Think</div>
+        <div class="ls-body">Model reads messages, reasons about what to do next.</div>
+      </div>
+      <div class="loop-step" data-step="1">
+        <div class="ls-num">02</div>
+        <div class="ls-title">Call Tool</div>
+        <div class="ls-body">Model returns a structured <code>tool_call</code> instead of prose.</div>
+      </div>
+      <div class="loop-step" data-step="2">
+        <div class="ls-num">03</div>
+        <div class="ls-title">Execute</div>
+        <div class="ls-body">Harness runs the tool (e.g. bash command) and captures output.</div>
+      </div>
+      <div class="loop-step" data-step="3">
+        <div class="ls-num">04</div>
+        <div class="ls-title">Observe</div>
+        <div class="ls-body">Tool result appended to messages. Loop repeats until no more calls.</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px;">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <span class="fname">simple_agent.py — the loop (core)</span>
+        </div>
+        <div class="terminal-body">
+<pre><span class="tk">for</span> _ <span class="tk">in</span> <span class="tf">range</span><span class="tp">(</span>MAX_TURNS<span class="tp">):</span>
+    model_reply <span class="tp">=</span> <span class="tf">llm_call</span><span class="tp">(</span>messages<span class="tp">)</span>          <span class="tc"># 1. Think</span>
+    messages<span class="tp">.</span><span class="tf">append</span><span class="tp">(</span>model_reply<span class="tp">)</span>
+
+    tool_calls <span class="tp">=</span> model_reply<span class="tp">.</span><span class="tf">get</span><span class="tp">(</span><span class="ts">"tool_calls"</span><span class="tp">)</span> <span class="tk">or</span> <span class="tp">[]</span>
+    <span class="tk">if not</span> tool_calls<span class="tp">:</span>
+        typer<span class="tp">.</span><span class="tf">echo</span><span class="tp">(</span>model_reply<span class="tp">.</span><span class="tf">get</span><span class="tp">(</span><span class="ts">"content"</span><span class="tp">))</span>  <span class="tc"># done</span>
+        <span class="tk">return</span>
+
+    <span class="tk">for</span> tool_call <span class="tk">in</span> tool_calls<span class="tp">:</span>              <span class="tc"># 2–3. Call & execute</span>
+        tool_result <span class="tp">=</span> <span class="tf">run_bash</span><span class="tp">(</span>
+            json<span class="tp">.</span><span class="tf">loads</span><span class="tp">(</span>tool_call<span class="tp">[</span><span class="ts">"function"</span><span class="tp">][</span><span class="ts">"arguments"</span><span class="tp">])[</span><span class="ts">"command"</span><span class="tp">]</span>
+        <span class="tp">)</span>
+        messages<span class="tp">.</span><span class="tf">append</span><span class="tp">({</span>                       <span class="tc"># 4. Observe</span>
+            <span class="ts">"role"</span><span class="tp">:</span>        <span class="ts">"tool"</span><span class="tp">,</span>
+            <span class="ts">"tool_call_id"</span><span class="tp">:</span> tool_call<span class="tp">[</span><span class="ts">"id"</span><span class="tp">],</span>
+            <span class="ts">"content"</span><span class="tp">:</span>     tool_result<span class="tp">,</span>
+        <span class="tp">})</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top:24px; font-size:14px; color:var(--ink-soft);">
+      Full implementation in <code>src/simple_agent.py</code> — 120 lines total.
+      That's all of it. Everything else in production harnesses is infrastructure
+      to make this loop robust, safe, and ergonomic.
+    </p>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="container">
+    <div class="section-label">Get Running</div>
+    <h2 class="section-title">Setup</h2>
+    <div class="setup-steps">
+
+      <div class="setup-step">
+        <div class="sn">01</div>
+        <div class="sc">
+          <div class="stitle">Clone the repo</div>
+          <div class="terminal" style="max-width:580px">
+            <div class="terminal-bar">
+              <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+              <span class="fname">bash</span>
+            </div>
+            <div class="terminal-body">
+<pre><span class="sh-prompt">$ </span><span class="sh-cmd">git clone https://github.com/&lt;org&gt;/agent_guild</span>
+<span class="sh-prompt">$ </span><span class="sh-cmd">cd agent_guild/meetups/1_agent_loop</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="sn">02</div>
+        <div class="sc">
+          <div class="stitle">Install uv &amp; sync dependencies</div>
+          <div class="terminal" style="max-width:580px">
+            <div class="terminal-bar">
+              <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+              <span class="fname">bash</span>
+            </div>
+            <div class="terminal-body">
+<pre><span class="sh-prompt">$ </span><span class="sh-cmd">curl -LsSf https://astral.sh/uv/install.sh | sh</span>
+<span class="sh-prompt">$ </span><span class="sh-cmd">uv sync</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="sn">03</div>
+        <div class="sc">
+          <div class="stitle">Add your API key</div>
+          <div class="sdesc">Create a free account at <a href="https://openrouter.ai">openrouter.ai</a>, generate a key, and add it to <code>.env</code>:</div>
+          <div class="terminal" style="max-width:580px">
+            <div class="terminal-bar">
+              <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+              <span class="fname">.env</span>
+            </div>
+            <div class="terminal-body">
+<pre><span class="sh-cmd">OPENROUTER_API_KEY=<span class="ts">"sk-or-…"</span></span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SCRIPTS -->
+<section id="scripts">
+  <div class="container">
+    <div class="section-label">Workshop Examples</div>
+    <h2 class="section-title">Run the scripts</h2>
+    <div class="scripts-grid">
+
+      <div class="script-card">
+        <div class="sc-head">
+          llm_call.py
+          <span class="sc-badge">Step 1</span>
+        </div>
+        <div class="sc-body">
+          <div class="sc-cmd">uv run python src/llm_call.py "What is a coding harness?"</div>
+          <div class="sc-desc">One LLM request via OpenRouter. Stateless — no memory, no tools.</div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="sc-head">
+          llm_tool_call.py
+          <span class="sc-badge">Step 2</span>
+        </div>
+        <div class="sc-body">
+          <div class="sc-cmd">uv run python src/llm_tool_call.py "What is the weather in Munich?"</div>
+          <div class="sc-desc">Model calls a weather tool. Harness fetches wttr.in and returns the result.</div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="sc-head">
+          llm_multiturn.py
+          <span class="sc-badge">Step 3</span>
+        </div>
+        <div class="sc-body">
+          <div class="sc-cmd">uv run python src/llm_multiturn.py</div>
+          <div class="sc-desc">Multi-turn chat. State lives in the growing messages list, not the model.</div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="sc-head">
+          simple_agent.py
+          <span class="sc-badge">Step 4</span>
+        </div>
+        <div class="sc-body">
+          <div class="sc-cmd">uv run python src/simple_agent.py "List the Python files in src."</div>
+          <div class="sc-desc">Full agent loop with a Bash tool. Asks for confirmation before each command.</div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="sc-head">
+          simple_agent_interactive.py
+          <span class="sc-badge">Step 5</span>
+        </div>
+        <div class="sc-body">
+          <div class="sc-cmd">uv run python src/simple_agent_interactive.py</div>
+          <div class="sc-desc">Same agent, persistent conversation history across turns.</div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="sc-head">
+          dungeon_agent.py
+          <span class="sc-badge">Bonus</span>
+        </div>
+        <div class="sc-body">
+          <div class="sc-cmd">uv run python src/dungeon_agent.py</div>
+          <div class="sc-desc">A dungeon-crawler agent — tools for moving, fighting, and exploring rooms.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout" style="margin-top:32px">
+      <strong>Warning</strong> — the agent runs bash commands with <em>your user permissions</em>.
+      Review every command before confirming. Never run untrusted prompts against it.
+    </div>
+  </div>
+</section>
+
+<!-- RESOURCES -->
+<section id="resources">
+  <div class="container">
+    <div class="section-label">Further Reading</div>
+    <h2 class="section-title">Resources</h2>
+    <ul class="resources-list">
+      <li class="resource-item">
+        <a href="docs/outline.md" target="_blank">
+          <span class="ri-label">Workshop</span>
+          <span class="ri-title">outline.md — self-paced guide</span>
+          <span class="ri-url">docs/outline.md</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://arxiv.org/abs/2210.03629" target="_blank">
+          <span class="ri-label">Paper</span>
+          <span class="ri-title">ReAct: Reason + Act in Language Models</span>
+          <span class="ri-url">arxiv.org/abs/2210.03629</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://github.com/SWE-agent/mini-swe-agent" target="_blank">
+          <span class="ri-label">GitHub</span>
+          <span class="ri-title">mini-swe-agent — minimal reference agent</span>
+          <span class="ri-url">github.com/SWE-agent/mini-swe-agent</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://pi.dev" target="_blank">
+          <span class="ri-label">Harness</span>
+          <span class="ri-title">pi — open-source agentic coding harness</span>
+          <span class="ri-url">pi.dev</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://opencode.ai" target="_blank">
+          <span class="ri-label">Harness</span>
+          <span class="ri-title">OpenCode — batteries-included coding agent</span>
+          <span class="ri-url">opencode.ai</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://openrouter.ai" target="_blank">
+          <span class="ri-label">API Router</span>
+          <span class="ri-title">OpenRouter — unified API for all providers</span>
+          <span class="ri-url">openrouter.ai</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://artificialanalysis.ai" target="_blank">
+          <span class="ri-label">Tooling</span>
+          <span class="ri-title">Artificial Analysis — model benchmarks &amp; pricing</span>
+          <span class="ri-url">artificialanalysis.ai</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://www.langchain.com/blog/the-anatomy-of-an-agent-harness" target="_blank">
+          <span class="ri-label">Article</span>
+          <span class="ri-title">Anatomy of an Agent Harness — LangChain</span>
+          <span class="ri-url">langchain.com/blog/…</span>
+        </a>
+      </li>
+      <li class="resource-item">
+        <a href="https://agentfightclub.today" target="_blank">
+          <span class="ri-label">Platform</span>
+          <span class="ri-title">Agent Fight Club — put your agent to work</span>
+          <span class="ri-url">agentfightclub.today</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="f-brand">Agent Guild · #1 Agent Loop</span>
+  <div class="f-links">
+    <a href="#agenda">Agenda</a>
+    <a href="#loop">Loop</a>
+    <a href="#setup">Setup</a>
+    <a href="https://agentfightclub.today" target="_blank">Fight Club</a>
+  </div>
+</footer>
+
+<script>
+  /* Animate the loop steps in sequence */
+  const steps = document.querySelectorAll('.loop-step');
+  let current = 0;
+
+  function highlightStep(i) {
+    steps.forEach((s, idx) => {
+      s.classList.remove('active-step', 'animating');
+      if (idx === i) {
+        s.classList.add('active-step');
+        // re-trigger pulse on next frame
+        requestAnimationFrame(() => s.classList.add('animating'));
+      }
+    });
+  }
+
+  // start animating when the loop section is visible
+  const loopSection = document.getElementById('loop');
+  let loopInterval = null;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !loopInterval) {
+        highlightStep(current);
+        loopInterval = setInterval(() => {
+          current = (current + 1) % steps.length;
+          highlightStep(current);
+        }, 1400);
+      } else if (!e.isIntersecting && loopInterval) {
+        clearInterval(loopInterval);
+        loopInterval = null;
+        steps.forEach(s => s.classList.remove('active-step', 'animating'));
+        current = 0;
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(loopSection);
+</script>
+</body>
+</html>
