@@ -27,7 +27,21 @@ Prerequisites:
 8. Self-improving agents e.g. Hermes, OpenClaw
 9. Dark Factories and future of work
 
+# Agent Harness Showcase
+
+See Agent Harness in action. Launch Claude Code, Codex, OpenCode with those tasks
+
+- Check last 10 emails in google mail using apple script and summarise them
+- Build an interactive educational web app to learn about Agent Harness internals
+- What cinemas show Odyssey later today in Munich? When? Provide links.
+
+Claude Code, Codex and OpenCode are all agent harnesses. They look similar UI-wise and also under the hood. You can see that they are very powerful and can pretty much do anything a human with computer can but much faster.
+
+Today we'll build a very simple version of agent harness. In the future workshops we will improve it and get closer to production-ready ones.
+
 # LLMs Basics
+
+To understand how agent harness work we first need to align on the fundamental building block - the LLM
 
 - LLMs are neural networks
 - Neural networks are machine learning models trained on data to predict something
@@ -136,13 +150,15 @@ However, we can fix it by appending previous user messages and agent replies to 
 uv run llm_multiturn.py
 ```
 
-# Context window and Caching
+# Context window
 
 Even with a while loop our conversation can't go on ad infinitum. Eventually LLM will "run out of memory". LLMs have "Context Windows" of different sizes which dictate how many tokens can fit in. For english it's usually considered 4 characters per token. Most models have either around 200k or 1mn tokens context window nowadays
 
 Token costs are different for input tokens and output tokens with input tokens being much cheaper than output tokens
 
 https://openrouter.ai/openai/gpt-5.6-luna
+
+# Caching (optional)
 
 However, we don't pay full read price for all messages sent to the model with each invocation. Model providers cache input tokens on their side and cached tokens cost much less than new read tokens. However, for tokens to be cached the message history mush be exactly the same as before. If I change a single character in a first message the whole cache will get invalidated and we'll incur a full cost for the whole message history. We will discuss more about how to save on your tokens in a future discussion on LLM tokenomics.
 
@@ -152,7 +168,14 @@ We've seen user and assistant messages but there is also a special `system` prom
 
 # From LLM to an Agent
 
-Now that we've seen message loop and tool calling we're ready to turn our LLM into an Agent. Agent is basically an LLM that can do meaningful work. For knowledge work meaningful usually means that we process (read) some information (text) and turn it into another form of information (another text). Therefore, to do meaningful work our agent must be ideally able to read files, write files, execute files (if they're code) and fetch data from external sources (the web).
+Now that we've seen message loop and tool calling we're ready to turn our LLM into an Agent. Agent is basically an LLM that can do meaningful work. For knowledge work meaningful usually means that we process (read) some information (text) and turn it into another form of information (another text).
+
+Therefore, to do meaningful work our agent must be ideally able to
+
+1. Read files
+2. Write files
+3. Execute files (i.e. run code)
+4. Fetch data from external sources (the web).
 
 # Almost everything can be done via terminal commands
 
@@ -245,6 +268,7 @@ Besides sandbox hardening production grade harnesses also provide
 - Model retries
 - Security guardrails
 - Persistent memory, skills, hooks, subagents, loops (future meetups)
+- And more
 
 ![Harness Capabilities](../imgs/harness-capabilities.png)
 
