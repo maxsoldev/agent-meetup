@@ -1,3 +1,7 @@
+Notes for Context Management workshop
+
+[Slide deck](context-management-deck.pdf)
+
 # 1. Intro
 
 "A lot of apparent “model quality” is really context quality" - Sebastian Raschka
