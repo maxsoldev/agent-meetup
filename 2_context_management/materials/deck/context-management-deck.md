@@ -936,6 +936,7 @@ style: |
   section.cache .src { margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
   section.plate.short .frame { height: 400px; box-sizing: border-box; background: #fff; padding: 10px 14px; }
   section.plate.miss .frame { height: 470px; box-sizing: border-box; background: #fcfcfb; padding: 10px; }
+  section.plate.trap .frame { height: 420px; box-sizing: border-box; background: #212121; padding: 14px; }
   section.plate.pce .frame { height: 540px; box-sizing: border-box; background: #f0eee8; padding: 10px; }
   section.plate .note.src { box-shadow: none; border: none; background: none; text-align: left; font-size: 13px; color: var(--ink-soft); padding: 0; margin-top: 18px; }
 
@@ -1016,6 +1017,19 @@ style: |
   section.ce .chain .s { border: 2px solid var(--ink); padding: 5px 10px; background: var(--bg); line-height: 1.25; }
   section.ce .chain .s.first { background: var(--ink); color: var(--bg); }
   section.ce .chain .a { text-align: center; font-weight: 700; }
+  /* big variants: bigger tiles, both blocks on one slide */
+  section.ce .axes.big { grid-template-columns: 190px 1fr 1fr; gap: 12px 16px; }
+  section.ce .axes.big > div:not(.h):not(.r) { padding: 14px 18px; min-height: 86px; box-shadow: 5px 5px 0 var(--ink); background: var(--bg); font-size: 18px; line-height: 1.35; display: flex; flex-direction: column; justify-content: center; }
+  section.ce .axes.big > div.cc:not(.h):not(.r) { background: var(--ink); box-shadow: 5px 5px 0 var(--hot); }
+  section.ce .axes.big b { font-size: 23px; letter-spacing: -0.02em; margin-bottom: 4px; }
+  section.ce .axes.big .h { font-size: 13px; }
+  section.ce .axes.big .r { font-size: 22px; }
+  section.ce .axes.big .r span { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; }
+  section.ce .chain.big { grid-template-columns: 110px 1fr 28px 1.15fr 28px 1.15fr; gap: 12px 6px; margin-top: 10px; font-size: 16px; }
+  section.ce .chain.big .lbl { font-size: 16px; }
+  section.ce .chain.big .s { padding: 10px 14px; box-shadow: 4px 4px 0 var(--ink); }
+  section.ce .chain.big .s.first { box-shadow: 4px 4px 0 var(--hot); }
+  section.ce .chain.big .a { font-size: 22px; }
   section.ce .lv.gap { margin-top: 24px; }
   section.ce .sub.top { margin-top: 0; }
   section.ce .sub { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin: 18px 0 4px; }
@@ -1028,6 +1042,11 @@ style: |
   section.ce .tile .big { font-weight: 700; font-size: 30px; letter-spacing: -0.04em; line-height: 1.05; }
   section.ce .tile .d { font-size: 13px; line-height: 1.3; margin-top: 4px; }
   section.ce .tile .s { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px; opacity: 0.7; }
+  /* move summary bar: first slide of each move */
+  section.ce .movehead { display: flex; align-items: baseline; gap: 18px; background: var(--ink); color: var(--bg); box-shadow: 6px 6px 0 var(--hot); padding: 10px 20px; margin-bottom: 20px; }
+  section.ce .movehead .n { font-size: 13px; letter-spacing: 0.24em; }
+  section.ce .movehead .v { font-weight: 700; font-size: 30px; text-transform: uppercase; letter-spacing: -0.04em; }
+  section.ce .movehead .d { font-weight: 700; font-size: 20px; }
   section.ce .q { border-left: 8px solid var(--ink); background: var(--panel); padding: 8px 16px; font-size: 20px; font-weight: 700; margin-bottom: 14px; }
   section.ce .q .attrib { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
   section.ce .knobs { display: grid; grid-template-columns: 150px repeat(3, 1fr); gap: 12px; margin-top: 16px; align-items: stretch; }
@@ -1739,6 +1758,18 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 
 ---
 
+<!-- _class: plate trap -->
+
+## Cache-cost trap: short prefixes are not cached
+
+<div class="frame"><img src="../images/cache-cost-trap-cropped.png" /></div>
+
+<div class="note">Below 1,024 tokens nothing is cached: a <strong>1,000-token</strong> prefix costs more than a <strong>2,000-token</strong> one</div>
+
+<div class="note src">OpenAI, Prompt caching guide · minimum 1,024 tokens · read 0.1× · write 1.25× · 9 reads per write</div>
+
+---
+
 <!-- _class: cache -->
 
 ## Best practices: append, don't edit
@@ -1883,6 +1914,8 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 
 <!-- _class: ce -->
 
+<div class="movehead"><span class="n">// 01</span><span class="v">✍️ Write</span><span class="d">Save it outside the window, so it survives</span></div>
+
 ## Write: save context outside the window
 
 <div class="lv">
@@ -1968,6 +2001,8 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 
 <!-- _class: ce -->
 
+<div class="movehead"><span class="n">// 02</span><span class="v">🎯 Select</span><span class="d">Pull in only what the next step needs</span></div>
+
 ## Select: who picks the context, and when
 
 <div class="lv three">
@@ -2018,7 +2053,7 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 
 ## Select: two axes, one pattern
 
-<div class="axes">
+<div class="axes big">
 <div class="h"></div>
 <div class="h">Keyword / structure: grep, paths</div>
 <div class="h">Semantic: embeddings</div>
@@ -2034,7 +2069,7 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 
 <div class="sub">Progressive disclosure: the same pattern in three places</div>
 
-<div class="chain">
+<div class="chain big">
 <div class="lbl">Skills</div><div class="s first">name + description</div><div class="a">→</div><div class="s">SKILL.md body</div><div class="a">→</div><div class="s">bundled files</div>
 <div class="lbl">Tools</div><div class="s first">tool search stub</div><div class="a">→</div><div class="s">full definition (−85% tokens)</div><div class="a">→</div><div class="s">CLI <code>--help</code>, MCP as code files</div>
 <div class="lbl">Memory</div><div class="s first">memory_summary.md</div><div class="a">→</div><div class="s">grep MEMORY.md</div><div class="a">→</div><div class="s">rollout summaries</div>
@@ -2043,6 +2078,8 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 ---
 
 <!-- _class: ce -->
+
+<div class="movehead"><span class="n">// 03</span><span class="v">✂️ Compress</span><span class="d">Fewer tokens for the same information</span></div>
 
 ## Compress: where we cut
 
@@ -2133,6 +2170,8 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 ---
 
 <!-- _class: ce -->
+
+<div class="movehead"><span class="n">// 04</span><span class="v">📦 Isolate</span><span class="d">Do heavy work in another window</span></div>
 
 ## Isolate: subagents
 

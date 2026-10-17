@@ -3,3 +3,5 @@
 .DS_Store
 **/__pycache__/
 .codex-tmp/
+# local-only: venue Wi-Fi QR code
+2_context_management/materials/images/wifi-ct-guest.png
