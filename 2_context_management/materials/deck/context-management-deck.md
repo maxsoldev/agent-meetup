@@ -936,6 +936,7 @@ style: |
   section.cache .src { margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
   section.plate.short .frame { height: 400px; box-sizing: border-box; background: #fff; padding: 10px 14px; }
   section.plate.miss .frame { height: 470px; box-sizing: border-box; background: #fcfcfb; padding: 10px; }
+  section.plate.pce .frame { height: 540px; box-sizing: border-box; background: #f0eee8; padding: 10px; }
   section.plate .note.src { box-shadow: none; border: none; background: none; text-align: left; font-size: 13px; color: var(--ink-soft); padding: 0; margin-top: 18px; }
 
   section.cache .ben.three { grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -1809,6 +1810,14 @@ The cache stores <strong>KV tensors</strong>, not the tokens.
 <div class="arrow">→</div>
 <div class="on"><b>Context engineering</b>Build a system that gives the model the right information over <u>many</u> turns</div>
 </div>
+
+---
+
+<!-- _class: plate pce -->
+
+<div class="frame"><img src="../images/prompt-vs-context-engineering.png" /></div>
+
+<div class="note src">Anthropic, Effective context engineering for AI agents, 2025</div>
 
 ---
 
