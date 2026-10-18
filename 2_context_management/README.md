@@ -1,3 +1,5 @@
+# Context Management for Agents
+
 Notes for Context Management workshop
 
 [Slide deck](context-management-deck.pdf)
@@ -19,9 +21,9 @@ Notes for Context Management workshop
 
 ## References
 
-[1] https://code.claude.com/docs/en/how-claude-code-works - best source!
-[2] https://www.youtube.com/playlist?list=PLSN0qpDfUvTM
-[3] https://learn.chatgpt.com/docs - Codex docs
+1. https://code.claude.com/docs/en/how-claude-code-works - best source!
+2. https://www.youtube.com/playlist?list=PLSN0qpDfUvTM - amazing graduate-level course from CMU on AI Agents (Autumn 2026 - fresh!)
+3. https://learn.chatgpt.com/docs - Codex docs
 
 # 2. Refresher
 
@@ -40,8 +42,8 @@ Best reference here is How Claude Code works page [2]
 
 ## References
 
-[1] https://simonwillison.net/2025/Sep/18/agents/
-[2] https://code.claude.com/docs/en/how-claude-code-works
+1. https://simonwillison.net/2025/Sep/18/agents/
+2. https://code.claude.com/docs/en/how-claude-code-works
 
 # 3. Context Anatomy
 
